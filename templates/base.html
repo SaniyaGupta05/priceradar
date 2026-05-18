@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PriceRadar — Compare Grocery Prices Across India{% endblock %}</title>
+    <meta name="description" content="{% block meta_desc %}Compare grocery prices in real-time across Blinkit, BigBasket, Zepto & Swiggy Instamart. Find the best deals and save money every time you shop.{% endblock %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo" id="logo-link">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span class="logo-text">Price<span class="logo-accent">Radar</span></span>
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <a href="/about" class="nav-link {% if request.endpoint == 'about' %}active{% endif %}">
+                    <i class="fas fa-info-circle"></i> About
+                </a>
+            </div>
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-inner">
+            <div class="footer-brand">
+                <span class="logo-text">Price<span class="logo-accent">Radar</span></span>
+                <p>Real-time grocery price comparison for smart shoppers.</p>
+            </div>
+            <div class="footer-platforms">
+                <p class="footer-label">Data Sources</p>
+                <div class="platform-badges">
+                    <span class="platform-badge blinkit">Blinkit</span>
+                    <span class="platform-badge bigbasket">BigBasket</span>
+                    <span class="platform-badge zepto">Zepto</span>
+                    <span class="platform-badge instamart">Instamart</span>
+                </div>
+            </div>
+            <p class="footer-note">© 2025 PriceRadar. For educational purposes only. Prices may vary.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+# PriceRadar — Ignore List
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.log
+.playwright/
+instamart_state.json
+scratch/
+*.png
+*.webp

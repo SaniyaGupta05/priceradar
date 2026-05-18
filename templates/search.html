@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+{% block title %}{{ query|title }} — PriceRadar Price Comparison{% endblock %}
+{% block meta_desc %}Compare prices for {{ query }} across Blinkit, BigBasket, Zepto, and Swiggy Instamart. Find the best deal now.{% endblock %}
+
+{% block content %}
+<div class="results-page">
+
+    <!-- Search Bar (sticky context bar) -->
+    <div class="results-topbar">
+        <div class="container results-topbar-inner">
+            <form action="/search" method="GET" class="topbar-search-form">
+                <div class="topbar-input-wrap">
+                    <i class="fas fa-search"></i>
+                    <input type="text" name="q" value="{{ query }}" placeholder="Search again...">
+                    <button type="submit">Search</button>
+                </div>
+            </form>
+            <a href="/" class="back-home">
+                <i class="fas fa-home"></i> Home
+            </a>
+        </div>
+    </div>
+
+    <div class="container results-container">
+
+        <!-- Results Header -->
+        <div class="results-header">
+            <div class="results-title-block">
+                <h1 class="results-title">
+                    Results for <span class="gradient-text">"{{ query|title }}"</span>
+                </h1>
+                <p class="results-meta">
+                    Found <strong>{{ products|length }}</strong> product{% if products|length != 1 %}s{% endif %}
+                    {% if from_cache %}
+                    <span class="cache-badge"><i class="fas fa-bolt"></i> Cached</span>
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- Source Stats -->
+            {% if source_stats %}
+            <div class="source-stat-pills">
+                {% for src, stat in source_stats.items() %}
+                <div class="stat-pill {{ src|lower|replace(' ', '-') }}">
+                    <span class="stat-src">{{ src }}</span>
+                    <span class="stat-count">{{ stat.count }} items</span>
+                    {% if stat.min_price > 0 %}
+                    <span class="stat-price">from ₹{{ stat.min_price|int }}</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        {% if not products %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <h2>No results found</h2>
+            <p>We couldn't find "<strong>{{ query }}</strong>" on any platform right now. The sites may have blocked the request or the product doesn't exist. Try a different search term.</p>
+            <a href="/" class="btn-primary">Try Another Search</a>
+        </div>
+
+        {% else %}
+
+        <!-- Best Deal Banner -->
+        {% if best_deal %}
+        <div class="best-deal-banner">
+            <div class="deal-glow"></div>
+            <div class="deal-left">
+                <div class="deal-trophy">🏆</div>
+                <div class="deal-info">
+                    <div class="deal-label">Best Deal Found</div>
+                    <h2 class="deal-name">{{ best_deal.name }}</h2>
+                    <div class="deal-meta">
+                        <span class="deal-platform {{ best_deal.source|lower|replace(' ', '-') }}">
+                            {{ best_deal.source }}
+                        </span>
+                        {% if best_deal.quantity %}
+                        <span class="deal-qty">{{ best_deal.quantity }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="deal-right">
+                <div class="deal-price-block">
+                    <span class="deal-price">₹{{ best_deal.price|int }}</span>
+                    {% if best_deal.mrp and best_deal.mrp > best_deal.price %}
+                    <span class="deal-mrp">MRP ₹{{ best_deal.mrp|int }}</span>
+                    {% endif %}
+                    {% if savings > 0 %}
+                    <span class="deal-savings">Save ₹{{ savings|round(0)|int }}</span>
+                    {% endif %}
+                </div>
+                <a href="{{ best_deal.link }}" target="_blank" rel="noopener" class="btn-primary deal-cta">
+                    Buy Now <i class="fas fa-external-link-alt"></i>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Main Layout -->
+        <div class="results-layout">
+
+            <!-- Products Grid -->
+            <div class="products-column">
+
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <span class="filter-label"><i class="fas fa-filter"></i> Filter:</span>
+                    <div class="filter-chips" id="filterChips">
+                        <button class="filter-chip active" data-filter="all">All Platforms</button>
+                        <button class="filter-chip" data-filter="blinkit">Blinkit</button>
+                        <button class="filter-chip" data-filter="bigbasket">BigBasket</button>
+                        <button class="filter-chip" data-filter="zepto">Zepto</button>
+                        <button class="filter-chip" data-filter="instamart">Instamart</button>
+                    </div>
+                    <div class="sort-wrap">
+                        <select id="sortSelect" class="sort-select">
+                            <option value="default">Sort: Best Value</option>
+                            <option value="price_asc">Price: Low → High</option>
+                            <option value="price_desc">Price: High → Low</option>
+                            <option value="rating">Rating</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Grouped comparison cards -->
+                {% if grouped_products %}
+                <div class="products-grid" id="productsGrid">
+                    {% for group in grouped_products %}
+                    <div class="product-card" data-sources="{{ group.products|map(attribute='source')|join(',') }}">
+                        <!-- Card Header -->
+                        <div class="card-header">
+                            {% if group.image %}
+                            <div class="card-img-wrap">
+                                <img
+                                    src="{{ group.image }}"
+                                    alt="{{ group.name }}"
+                                    class="card-img"
+                                    loading="lazy"
+                                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+                                >
+                                <div class="card-img-placeholder" style="display:none;">
+                                    <i class="fas fa-box"></i>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="card-img-wrap">
+                                <div class="card-img-placeholder">
+                                    <i class="fas fa-box"></i>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <div class="card-title-block">
+                                <h3 class="card-title">{{ group.name }}</h3>
+                                {% if group.quantity %}
+                                <span class="card-qty">{{ group.quantity }}</span>
+                                {% endif %}
+                                <!-- Multi-platform badge -->
+                                {% if group.products|length > 1 %}
+                                <span class="multi-badge">
+                                    <i class="fas fa-code-compare"></i>
+                                    {{ group.products|length }} platforms
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Price comparison rows -->
+                        <div class="store-comparison">
+                            {% set sorted_products = group.products|sort(attribute='price') %}
+                            {% for product in sorted_products %}
+                            <div class="store-row {% if loop.first %}cheapest{% endif %}" data-source="{{ product.source|lower|replace(' ', '-') }}">
+                                <span class="store-badge {{ product.source|lower|replace(' ', '-') }}">
+                                    {{ product.source }}
+                                </span>
+                                <div class="price-info">
+                                    <span class="store-price">₹{{ product.price|int }}</span>
+                                    {% if product.mrp and product.mrp > product.price %}
+                                    <span class="store-mrp">₹{{ product.mrp|int }}</span>
+                                    {% set disc = ((product.mrp - product.price) / product.mrp * 100)|round(0)|int %}
+                                    {% if disc > 0 %}
+                                    <span class="discount-tag">{{ disc }}% off</span>
+                                    {% endif %}
+                                    {% endif %}
+                                </div>
+                                {% if loop.first %}
+                                <span class="best-price-label">Best</span>
+                                {% endif %}
+                                <a href="{{ product.link }}" target="_blank" rel="noopener" class="btn-sm-buy">
+                                    <i class="fas fa-external-link-alt"></i> Buy
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Card Footer: rating & unit price -->
+                        <div class="card-footer">
+                            {% set rep = group.products|sort(attribute='price')|first %}
+                            {% if rep.rating and rep.rating > 0 %}
+                            <div class="rating-wrap">
+                                <i class="fas fa-star" style="color:#f59e0b"></i>
+                                <span>{{ rep.rating }}</span>
+                            </div>
+                            {% endif %}
+                            {% if rep.unit_price and rep.unit_price > 0 and rep.unit_price != rep.price %}
+                            <div class="unit-price-info">
+                                ₹{{ rep.unit_price|round(0)|int }}/kg equivalent
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- AI Sidebar -->
+            <aside class="ai-sidebar">
+                <div class="ai-card" id="aiCard">
+                    <div class="ai-card-header">
+                        <div class="ai-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div>
+                            <h3>AI Shopping Advisor</h3>
+                            <p>Powered by Llama 3.1</p>
+                        </div>
+                    </div>
+                    <div class="ai-content" id="aiContent">
+                        <div class="ai-loading">
+                            <div class="ai-spinner"></div>
+                            <p>Analyzing prices...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats Card -->
+                <div class="stats-card">
+                    <h4><i class="fas fa-chart-bar"></i> Price Summary</h4>
+                    {% if products %}
+                    {% set prices = products|map(attribute='price')|list %}
+                    <div class="stat-row">
+                        <span>Lowest Price</span>
+                        <strong class="price-green">₹{{ prices|min|int }}</strong>
+                    </div>
+                    <div class="stat-row">
+                        <span>Highest Price</span>
+                        <strong class="price-red">₹{{ prices|max|int }}</strong>
+                    </div>
+                    <div class="stat-row">
+                        <span>Potential Saving</span>
+                        <strong class="price-green">₹{{ (prices|max - prices|min)|int }}</strong>
+                    </div>
+                    <div class="stat-row">
+                        <span>Products Found</span>
+                        <strong>{{ products|length }}</strong>
+                    </div>
+                    {% endif %}
+                </div>
+            </aside>
+        </div>
+
+        {% endif %}
+    </div>
+</div>
+
+<script>
+const PRODUCTS_DATA = {{ products | tojson }};
+const SEARCH_QUERY = {{ query | tojson }};
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Trigger AI analysis
+    fetch('/ai_analysis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ products: PRODUCTS_DATA, query: SEARCH_QUERY })
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('aiContent').innerHTML = data.analysis || '<p>No analysis available.</p>';
+    })
+    .catch(() => {
+        document.getElementById('aiContent').innerHTML = '<p>⚠️ Could not load AI analysis.</p>';
+    });
+
+    // Filter chips
+    const filterChips = document.querySelectorAll('.filter-chip');
+    const cards = document.querySelectorAll('.product-card');
+
+    filterChips.forEach(chip => {
+        chip.addEventListener('click', function() {
+            filterChips.forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            const filter = this.dataset.filter;
+            cards.forEach(card => {
+                if (filter === 'all') {
+                    card.style.display = '';
+                } else {
+                    const sources = (card.dataset.sources || '').toLowerCase();
+                    card.style.display = sources.includes(filter) ? '' : 'none';
+                }
+            });
+        });
+    });
+
+    // Sort select
+    const sortSelect = document.getElementById('sortSelect');
+    const grid = document.getElementById('productsGrid');
+    if (sortSelect && grid) {
+        sortSelect.addEventListener('change', function() {
+            const cardsArr = Array.from(grid.querySelectorAll('.product-card'));
+            cardsArr.sort((a, b) => {
+                const priceA = parseFloat(a.querySelector('.store-price')?.textContent?.replace('₹','') || 0);
+                const priceB = parseFloat(b.querySelector('.store-price')?.textContent?.replace('₹','') || 0);
+                if (this.value === 'price_asc') return priceA - priceB;
+                if (this.value === 'price_desc') return priceB - priceA;
+                return 0;
+            });
+            cardsArr.forEach(c => grid.appendChild(c));
+        });
+    }
+});
+</script>
+{% endblock %}

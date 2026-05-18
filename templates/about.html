@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}About PriceRadar — How We Work{% endblock %}
+
+{% block content %}
+<section class="hero" style="min-height:40vh;">
+    <div class="hero-bg">
+        <div class="hero-orb orb-1"></div>
+        <div class="hero-orb orb-2"></div>
+    </div>
+    <div class="container hero-content" style="padding-top:6rem;">
+        <h1 class="hero-title">About <span class="gradient-text">PriceRadar</span></h1>
+        <p class="hero-subtitle" style="max-width:600px;margin:0 auto;">
+            A smart grocery price comparison tool built for the Indian quick-commerce ecosystem.
+        </p>
+    </div>
+</section>
+
+<section style="padding:4rem 0;">
+    <div class="container" style="max-width:800px;margin:0 auto;">
+        <div class="about-card">
+            <h2>🎯 What We Do</h2>
+            <p>PriceRadar scrapes real-time product listings from <strong>Blinkit</strong>, <strong>BigBasket</strong>, <strong>Zepto</strong>, and <strong>Swiggy Instamart</strong> in parallel and presents the results in a clean, comparable format.</p>
+        </div>
+        <div class="about-card">
+            <h2>🤖 AI Assistant</h2>
+            <p>We use the <strong>Groq API</strong> with <strong>Llama 3.1</strong> to analyze your search results and give you a plain-English buying recommendation — no jargon, just good advice.</p>
+        </div>
+        <div class="about-card">
+            <h2>⚠️ Disclaimer</h2>
+            <p>PriceRadar is an academic/educational project. Scraping platform websites may violate their Terms of Service. Always verify prices directly on the respective apps before purchasing. Prices shown may be delayed or inaccurate.</p>
+        </div>
+        <div class="about-card">
+            <h2>🛠️ Tech Stack</h2>
+            <ul style="list-style:none;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+                <li>🐍 Python + Flask</li>
+                <li>🎭 Playwright (stealth)</li>
+                <li>🤖 Groq / Llama 3.1</li>
+                <li>🎨 Vanilla CSS</li>
+                <li>⚡ ThreadPoolExecutor</li>
+                <li>🔒 In-memory caching</li>
+            </ul>
+        </div>
+        <div style="text-align:center;margin-top:2rem;">
+            <a href="/" class="btn-primary">Start Comparing</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

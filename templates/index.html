@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}PriceRadar — Smart Grocery Price Comparison{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-bg">
+        <div class="hero-orb orb-1"></div>
+        <div class="hero-orb orb-2"></div>
+        <div class="hero-orb orb-3"></div>
+    </div>
+    <div class="container hero-content">
+        <div class="hero-badge">
+            <i class="fas fa-bolt"></i> Live Price Comparison
+        </div>
+        <h1 class="hero-title">
+            Find the <span class="gradient-text">Best Price</span><br>
+            Across Every App
+        </h1>
+        <p class="hero-subtitle">
+            Instantly compare grocery prices on <strong>Blinkit</strong>, <strong>BigBasket</strong>,
+            <strong>Zepto</strong> &amp; <strong>Swiggy Instamart</strong> — all in one place.
+        </p>
+
+        <!-- Main Search -->
+        <form action="/search" method="GET" class="hero-search-form" id="heroSearchForm">
+            <div class="search-input-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input
+                    type="text"
+                    name="q"
+                    id="heroSearchInput"
+                    placeholder="Search milk, eggs, bread, maggi..."
+                    autocomplete="off"
+                    required
+                >
+                <button type="submit" class="search-btn" id="searchBtn">
+                    <span class="btn-text">Compare Prices</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </form>
+
+        <!-- Quick Tags -->
+        <div class="quick-tags">
+            <span class="quick-label">Popular:</span>
+            <div class="tags-row">
+                <a href="/search?q=milk" class="quick-tag">🥛 Milk</a>
+                <a href="/search?q=eggs" class="quick-tag">🥚 Eggs</a>
+                <a href="/search?q=bread" class="quick-tag">🍞 Bread</a>
+                <a href="/search?q=rice" class="quick-tag">🍚 Rice</a>
+                <a href="/search?q=maggi" class="quick-tag">🍜 Maggi</a>
+                <a href="/search?q=chips" class="quick-tag">🥔 Chips</a>
+                <a href="/search?q=coffee" class="quick-tag">☕ Coffee</a>
+                <a href="/search?q=atta" class="quick-tag">🌾 Atta</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Platform Strip -->
+<section class="platform-strip">
+    <div class="container">
+        <p class="strip-label">Comparing prices from</p>
+        <div class="platforms-row">
+            <div class="platform-chip blinkit">
+                <div class="platform-dot"></div>
+                <span>Blinkit</span>
+            </div>
+            <div class="platform-chip bigbasket">
+                <div class="platform-dot"></div>
+                <span>BigBasket</span>
+            </div>
+            <div class="platform-chip zepto">
+                <div class="platform-dot"></div>
+                <span>Zepto</span>
+            </div>
+            <div class="platform-chip instamart">
+                <div class="platform-dot"></div>
+                <span>Instamart</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="features-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Why <span class="gradient-text">PriceRadar</span>?</h2>
+            <p>Stop wasting time checking 4 apps. We do it for you.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card" style="--delay: 0s">
+                <div class="feature-icon blinkit-bg">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3>Real-Time Data</h3>
+                <p>Live scraping from all 4 platforms every time you search. Always up-to-date prices.</p>
+            </div>
+            <div class="feature-card" style="--delay: 0.1s">
+                <div class="feature-icon zepto-bg">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3>AI-Powered Advice</h3>
+                <p>Our AI analyzes results and gives you a personalized best-buy recommendation.</p>
+            </div>
+            <div class="feature-card" style="--delay: 0.2s">
+                <div class="feature-icon bigbasket-bg">
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <h3>Smart Grouping</h3>
+                <p>Same product, different platforms? We group them for a true side-by-side comparison.</p>
+            </div>
+            <div class="feature-card" style="--delay: 0.3s">
+                <div class="feature-icon instamart-bg">
+                    <i class="fas fa-piggy-bank"></i>
+                </div>
+                <h3>Maximize Savings</h3>
+                <p>Unit-price analysis and discount tracking so you always get the best value.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How it works -->
+<section class="how-it-works">
+    <div class="container">
+        <div class="section-header">
+            <h2>How It <span class="gradient-text">Works</span></h2>
+        </div>
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-num">01</div>
+                <h3>Type your product</h3>
+                <p>Search for any grocery item — from staples to snacks.</p>
+            </div>
+            <div class="step-divider"><i class="fas fa-chevron-right"></i></div>
+            <div class="step-card">
+                <div class="step-num">02</div>
+                <h3>We scrape all 4 apps</h3>
+                <p>Blinkit, BigBasket, Zepto & Instamart — simultaneously.</p>
+            </div>
+            <div class="step-divider"><i class="fas fa-chevron-right"></i></div>
+            <div class="step-card">
+                <div class="step-num">03</div>
+                <h3>Compare & save</h3>
+                <p>See ranked results and AI advice. Click to buy from the cheapest platform.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
