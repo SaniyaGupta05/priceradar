@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 
 function App() {
+  const API_BASE = import.meta.env.VITE_API_URL || ''
   const [query, setQuery] = useState('')
   const [pincode, setPincode] = useState('560001')
   const [resolvedCity, setResolvedCity] = useState('Bangalore')
@@ -114,7 +115,7 @@ function App() {
     }, 2000)
 
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(searchQ)}&pincode=${pincode}`)
+      const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(searchQ)}&pincode=${pincode}`)
       clearInterval(interval)
       
       if (!res.ok) {
@@ -146,7 +147,7 @@ function App() {
   const triggerAiAnalysis = async (products, searchQ) => {
     setAiLoading(true)
     try {
-      const res = await fetch('/api/ai_analysis', {
+      const res = await fetch(`${API_BASE}/api/ai_analysis`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
