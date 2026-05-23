@@ -21,6 +21,10 @@
                 </div>
                 <span class="logo-text">Price<span class="logo-accent">Radar</span></span>
             </a>
+            <div class="nav-location" id="navLocationBtn" title="Click to change location">
+                <i class="fas fa-map-marker-alt"></i>
+                <span id="navLocationText">{% if resolved_city %}{{ resolved_city }}{% if pincode %} ({{ pincode }}){% endif %}{% else %}Select Pincode{% endif %}</span>
+            </div>
             <div class="nav-links">
                 <a href="/" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
                     <i class="fas fa-home"></i> Home
@@ -59,6 +63,21 @@
             <p class="footer-note">© 2025 PriceRadar. For educational purposes only. Prices may vary.</p>
         </div>
     </footer>
+
+    <!-- Location Selector Modal Overlay -->
+    <div class="location-modal-overlay" id="locationModalOverlay">
+        <div class="location-modal-card">
+            <h3><i class="fas fa-map-marker-alt"></i> Enter Delivery Pincode</h3>
+            <p>Compare prices and check product availability based on your delivery area.</p>
+            <form id="pincodeForm">
+                <div class="pincode-input-wrap">
+                    <input type="text" id="pincodeInput" maxlength="6" placeholder="Enter 6-digit Pincode (e.g. 110001)" required autocomplete="off">
+                </div>
+                <div class="pincode-error" id="pincodeError">Please enter a valid 6-digit Indian pincode.</div>
+                <button type="submit" class="btn-primary">Set Location</button>
+            </form>
+        </div>
+    </div>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>

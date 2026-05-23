@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 
 {% block title %}{{ query|title }} — PriceRadar Price Comparison{% endblock %}
-{% block meta_desc %}Compare prices for {{ query }} across Blinkit, BigBasket, Zepto, and Swiggy Instamart. Find the best deal now.{% endblock %}
+{% block meta_desc %}Compare prices for {{ query }} across Blinkit, BigBasket, Zepto, and Swiggy Instamart. Find the
+best deal now.{% endblock %}
 
 {% block content %}
 <div class="results-page">
@@ -10,6 +11,7 @@
     <div class="results-topbar">
         <div class="container results-topbar-inner">
             <form action="/search" method="GET" class="topbar-search-form">
+                <input type="hidden" name="pincode" id="searchPincodeInput" value="{{ pincode }}">
                 <div class="topbar-input-wrap">
                     <i class="fas fa-search"></i>
                     <input type="text" name="q" value="{{ query }}" placeholder="Search again...">
@@ -59,7 +61,8 @@
         <div class="empty-state">
             <div class="empty-icon">🔍</div>
             <h2>No results found</h2>
-            <p>We couldn't find "<strong>{{ query }}</strong>" on any platform right now. The sites may have blocked the request or the product doesn't exist. Try a different search term.</p>
+            <p>We couldn't find "<strong>{{ query }}</strong>" on any platform right now. The sites may have blocked the
+                request or the product doesn't exist. Try a different search term.</p>
             <a href="/" class="btn-primary">Try Another Search</a>
         </div>
 
@@ -136,13 +139,8 @@
                         <div class="card-header">
                             {% if group.image %}
                             <div class="card-img-wrap">
-                                <img
-                                    src="{{ group.image }}"
-                                    alt="{{ group.name }}"
-                                    class="card-img"
-                                    loading="lazy"
-                                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
-                                >
+                                <img src="{{ group.image }}" alt="{{ group.name }}" class="card-img" loading="lazy"
+                                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                                 <div class="card-img-placeholder" style="display:none;">
                                     <i class="fas fa-box"></i>
                                 </div>
@@ -173,7 +171,8 @@
                         <div class="store-comparison">
                             {% set sorted_products = group.products|sort(attribute='price') %}
                             {% for product in sorted_products %}
-                            <div class="store-row {% if loop.first %}cheapest{% endif %}" data-source="{{ product.source|lower|replace(' ', '-') }}">
+                            <div class="store-row {% if loop.first %}cheapest{% endif %}"
+                                data-source="{{ product.source|lower|replace(' ', '-') }}">
                                 <span class="store-badge {{ product.source|lower|replace(' ', '-') }}">
                                     {{ product.source }}
                                 </span>
@@ -269,60 +268,60 @@
 </div>
 
 <script>
-const PRODUCTS_DATA = {{ products | tojson }};
-const SEARCH_QUERY = {{ query | tojson }};
+    const PRODUCTS_DATA = {{ products | tojson }};
+    const SEARCH_QUERY = {{ query | tojson }};
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Trigger AI analysis
-    fetch('/ai_analysis', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ products: PRODUCTS_DATA, query: SEARCH_QUERY })
-    })
-    .then(r => r.json())
-    .then(data => {
-        document.getElementById('aiContent').innerHTML = data.analysis || '<p>No analysis available.</p>';
-    })
-    .catch(() => {
-        document.getElementById('aiContent').innerHTML = '<p>⚠️ Could not load AI analysis.</p>';
-    });
+    document.addEventListener('DOMContentLoaded', function () {
+        // Trigger AI analysis
+        fetch('/ai_analysis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ products: PRODUCTS_DATA, query: SEARCH_QUERY })
+        })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('aiContent').innerHTML = data.analysis || '<p>No analysis available.</p>';
+            })
+            .catch(() => {
+                document.getElementById('aiContent').innerHTML = '<p>⚠️ Could not load AI analysis.</p>';
+            });
 
-    // Filter chips
-    const filterChips = document.querySelectorAll('.filter-chip');
-    const cards = document.querySelectorAll('.product-card');
+        // Filter chips
+        const filterChips = document.querySelectorAll('.filter-chip');
+        const cards = document.querySelectorAll('.product-card');
 
-    filterChips.forEach(chip => {
-        chip.addEventListener('click', function() {
-            filterChips.forEach(c => c.classList.remove('active'));
-            this.classList.add('active');
-            const filter = this.dataset.filter;
-            cards.forEach(card => {
-                if (filter === 'all') {
-                    card.style.display = '';
-                } else {
-                    const sources = (card.dataset.sources || '').toLowerCase();
-                    card.style.display = sources.includes(filter) ? '' : 'none';
-                }
+        filterChips.forEach(chip => {
+            chip.addEventListener('click', function () {
+                filterChips.forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                const filter = this.dataset.filter;
+                cards.forEach(card => {
+                    if (filter === 'all') {
+                        card.style.display = '';
+                    } else {
+                        const sources = (card.dataset.sources || '').toLowerCase();
+                        card.style.display = sources.includes(filter) ? '' : 'none';
+                    }
+                });
             });
         });
-    });
 
-    // Sort select
-    const sortSelect = document.getElementById('sortSelect');
-    const grid = document.getElementById('productsGrid');
-    if (sortSelect && grid) {
-        sortSelect.addEventListener('change', function() {
-            const cardsArr = Array.from(grid.querySelectorAll('.product-card'));
-            cardsArr.sort((a, b) => {
-                const priceA = parseFloat(a.querySelector('.store-price')?.textContent?.replace('₹','') || 0);
-                const priceB = parseFloat(b.querySelector('.store-price')?.textContent?.replace('₹','') || 0);
-                if (this.value === 'price_asc') return priceA - priceB;
-                if (this.value === 'price_desc') return priceB - priceA;
-                return 0;
+        // Sort select
+        const sortSelect = document.getElementById('sortSelect');
+        const grid = document.getElementById('productsGrid');
+        if (sortSelect && grid) {
+            sortSelect.addEventListener('change', function () {
+                const cardsArr = Array.from(grid.querySelectorAll('.product-card'));
+                cardsArr.sort((a, b) => {
+                    const priceA = parseFloat(a.querySelector('.store-price')?.textContent?.replace('₹', '') || 0);
+                    const priceB = parseFloat(b.querySelector('.store-price')?.textContent?.replace('₹', '') || 0);
+                    if (this.value === 'price_asc') return priceA - priceB;
+                    if (this.value === 'price_desc') return priceB - priceA;
+                    return 0;
+                });
+                cardsArr.forEach(c => grid.appendChild(c));
             });
-            cardsArr.forEach(c => grid.appendChild(c));
-        });
-    }
-});
+        }
+    });
 </script>
 {% endblock %}
