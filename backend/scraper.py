@@ -19,7 +19,15 @@ def _make_ctx(playwright, headless=True, lat=None, lng=None, storage_state=None)
     ua = USER_AGENTS[0] if storage_state else random.choice(USER_AGENTS)
     cv = re.search(r"Chrome/(\d+)", ua); ver = cv.group(1) if cv else "124"
     browser = playwright.chromium.launch(headless=headless,
-        args=["--disable-blink-features=AutomationControlled","--no-sandbox","--disable-dev-shm-usage"])
+        args=[
+            "--disable-blink-features=AutomationControlled",
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--disable-software-rasterizer",
+            "--disable-extensions",
+            "--js-flags=--max-old-space-size=128"
+        ])
     latitude = lat if lat is not None else 12.9716
     longitude = lng if lng is not None else 77.5946
     
@@ -235,16 +243,31 @@ def scrape_zepto(query: str, lat=None, lng=None) -> list:
                 # ── Load page ─────────────────────────────────────────────────
                 page.goto(url, wait_until='domcontentloaded', timeout=55000)
                 try:
-                    page.wait_for_load_state('networkidle', timeout=15000)
+                    page.wait_for_load_state('networkidle', timeout=12000)
                 except Exception:
                     pass
-                time.sleep(6)   # wait for all XHR to complete
-
-                # Scroll to trigger any lazy-loaded API pages
-                for i in range(1, 9):
-                    page.evaluate(f"window.scrollTo(0, {i * 350})")
+                
+                # Smart wait loop instead of hardcoded sleeps
+                start_time = time.time()
+                while time.time() - start_time < 8:
+                    # Let's count items in raw_responses to see if we have enough data
+                    temp_items = []
+                    for response_data in raw_responses:
+                        _zepto_collect_items(response_data, temp_items)
+                    if len(temp_items) >= 5:
+                        log.info(f"[Zepto] Smart break: captured {len(temp_items)} items early")
+                        break
                     time.sleep(0.4)
-                time.sleep(3)   # final settle
+
+                # Scroll a bit only if we didn't capture enough products
+                temp_items = []
+                for response_data in raw_responses:
+                    _zepto_collect_items(response_data, temp_items)
+                if len(temp_items) < 3:
+                    for i in range(1, 4):
+                        page.evaluate(f"window.scrollTo(0, {i * 300})")
+                        time.sleep(0.4)
+                    time.sleep(1.0)
 
             finally:
                 page.close()
@@ -510,17 +533,27 @@ def _scrape_with_intercept(source, url, api_patterns, api_parser_fn, dom_js_fall
             page.on('response', on_response)
             try:
                 page.goto(url, wait_until='domcontentloaded', timeout=50000)
-                try: page.wait_for_load_state('networkidle', timeout=15000)
+                try: page.wait_for_load_state('networkidle', timeout=12000)
                 except: pass
-                time.sleep(5)  # extra wait for JS-heavy SPAs
-                if wait_sel:
-                    try: page.wait_for_selector(wait_sel, timeout=8000)
-                    except: pass
-                # Scroll to trigger lazy-load API calls
-                for i in range(1, 8):
-                    page.evaluate(f"window.scrollTo(0,{i*400})")
-                    time.sleep(0.5)
-                time.sleep(2)
+                
+                # Smart wait loop instead of fixed sleep
+                start_time = time.time()
+                while time.time() - start_time < 8:
+                    if len(api_hits) >= 5:
+                        log.info(f"[{source}] Smart break: captured {len(api_hits)} API items early")
+                        break
+                    time.sleep(0.4)
+                
+                if len(api_hits) < 3:
+                    if wait_sel:
+                        try: page.wait_for_selector(wait_sel, timeout=4000)
+                        except: pass
+                    # Scroll to trigger lazy-load API calls
+                    for i in range(1, 4):
+                        page.evaluate(f"window.scrollTo(0,{i*400})")
+                        time.sleep(0.4)
+                    time.sleep(1.0)
+                    
                 log.info(f"[{source}] Intercepted {len(intercepted_urls)} API URLs")
 
                 raw_items = []
@@ -883,12 +916,12 @@ def scrape_bigbasket(query, lat=None, lng=None):
                 page.goto(url, wait_until='domcontentloaded', timeout=45000)
                 try: page.wait_for_load_state('networkidle', timeout=12000)
                 except: pass
-                time.sleep(3)
-                try: page.wait_for_selector('li.PaginateItems___StyledLi', timeout=10000)
+                # Wait for product cards to load dynamically
+                try: page.wait_for_selector('li.PaginateItems___StyledLi, [class*="SKUCard"], [class*="sku-card"]', timeout=8000)
                 except: pass
-                for i in range(1,7):
-                    page.evaluate(f"window.scrollTo(0,{i*500})")
-                    time.sleep(0.7)
+                for i in range(1, 4):
+                    page.evaluate(f"window.scrollTo(0,{i*600})")
+                    time.sleep(0.4)
                 raw = page.evaluate(_BB_JS)
                 log.info(f"[BigBasket] DOM returned {len(raw)} items")
                 seen = set()
@@ -978,7 +1011,7 @@ def get_scraped_products(query: str, lat=None, lng=None, city=None) -> list:
         "Zepto": lambda q: scrape_zepto(q, lat=lat, lng=lng),
         "Instamart": lambda q: scrape_instamart(q, lat=lat, lng=lng, city=city)
     }
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as ex:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as ex:
         futures = {ex.submit(fn, query): name for name, fn in scrapers.items()}
         for future in concurrent.futures.as_completed(futures):
             name = futures[future]
@@ -991,6 +1024,8 @@ def get_scraped_products(query: str, lat=None, lng=None, city=None) -> list:
             except Exception as exc:
                 log.error(f"[{name}] error: {exc}")
     log.info(f"Total products: {len(all_products)}")
+    import gc
+    gc.collect()
     return all_products
 
 if __name__ == "__main__":
